@@ -93,7 +93,7 @@ const isCustomOpenAIService = computed(() => isCustomOpenAIProviderId(props.serv
 
 const tone = computed(() => {
   if (isCustomOpenAIService.value) return 'violet'
-  if (['openai', 'chatgptPlan', 'azureOpenai', 'newapi'].includes(props.service)) return 'violet'
+  if (['openai', 'chatgptPlan', 'codexCli', 'azureOpenai', 'newapi'].includes(props.service)) return 'violet'
   if (['deepseek', 'deepL', 'deeplx', 'microsoft', 'freeTranslation', 'myMemory'].includes(props.service)) return 'blue'
   if (['gemini', 'google', 'chromeTranslator', 'localTranslation', 'ollama', 'googleCloudTranslation'].includes(props.service)) return 'green'
   if (['azureTranslator', 'tencent', 'baiduTranslation'].includes(props.service)) return 'blue'
@@ -102,7 +102,10 @@ const tone = computed(() => {
 })
 
 const brandIcon = computed(() => {
-  const service = props.service === 'doubaoWeb' ? 'doubao' : props.service === 'chatgptPlan' ? 'openai' : props.service
+  // 本机 CLI 服务沿用所属厂商的品牌图标：Claude Code → Claude，Codex CLI → OpenAI。
+  const service = props.service === 'doubaoWeb' ? 'doubao'
+    : props.service === 'chatgptPlan' || props.service === 'codexCli' ? 'openai'
+    : props.service === 'claudeCode' ? 'claude' : props.service
   return getServiceBrandIcon(service)
 })
 </script>
@@ -216,6 +219,7 @@ const brandIcon = computed(() => {
 }
 
 .service-brand-icon[data-service='openai'],
+.service-brand-icon[data-service='codexCli'],
 .service-brand-icon[data-service='chatgptPlan'] {
   color: #252a31;
   background: #f0f2f5;
@@ -226,7 +230,8 @@ const brandIcon = computed(() => {
   background: #f0efff;
 }
 
-.service-brand-icon[data-service='claude'] {
+.service-brand-icon[data-service='claude'],
+.service-brand-icon[data-service='claudeCode'] {
   color: #b66b43;
   background: #fff0e8;
 }

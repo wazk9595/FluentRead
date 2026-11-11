@@ -1313,6 +1313,8 @@ const configurationCompute = ref({
   cloudRegionOptions: computed(() => cloudRegionOptions[selectedConfigurationService.value] || []),
   defaultCloudRegion: computed(() => getDefaultCloudRegion(selectedConfigurationService.value)),
   showOllamaEndpoint: computed(() => selectedConfigurationService.value === services.ollama),
+  // 本机 CLI 桥接与 Ollama 一样以“服务地址”覆盖默认回环端点，但提示文案指向桥接的启动方式。
+  showLocalCliEndpoint: computed(() => servicesType.isLocalCliBridge(selectedConfigurationService.value)),
   showCustomOpenAI: computed(() => Boolean(getCustomOpenAIProvider(config.value.customOpenAIProviders, selectedConfigurationService.value))),
   showDeepLX: computed(() => selectedConfigurationService.value === 'deeplx'),
   showMiniMaxRegion: computed(() => selectedConfigurationService.value === services.minimax),

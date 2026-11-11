@@ -156,6 +156,24 @@
       </div>
     </div>
 
+    <div v-if="compute.showLocalCliEndpoint" class="connection-field" data-local-cli-endpoint>
+      <div class="connection-field-label">
+        <strong>{{ translateLegacy('本机桥接地址') }}</strong>
+        <FieldHelp :content="translateLegacy('留空时使用本机桥接的默认地址；桥接改用其他端口时填写完整的 Chat Completions 地址')">
+          <template #content>
+            <p>{{ translateLegacy('留空时使用本机桥接的默认地址；桥接改用其他端口时填写完整的 Chat Completions 地址') }}</p>
+            <code>{{ LOCAL_CLI_BRIDGE_ENDPOINTS[service] }}</code>
+            <p>{{ translateLegacy('使用前需要在本机启动 FluentRead 本机 CLI 桥接，并确保对应的 CLI 已登录') }}</p>
+            <code>node integrations/local-cli/cli.mjs</code>
+          </template>
+        </FieldHelp>
+      </div>
+      <div class="connection-field-control">
+        <el-input :model-value="config.proxy[service]" :onUpdate:modelValue="fieldActions.proxy" :aria-label="translateLegacy('本机桥接地址')" :placeholder="LOCAL_CLI_BRIDGE_ENDPOINTS[service]" />
+        <p class="provider-field-help" data-local-cli-hint>{{ translateLegacy('使用前需要在本机启动 FluentRead 本机 CLI 桥接，并确保对应的 CLI 已登录') }}</p>
+      </div>
+    </div>
+
     <div v-if="compute.showToken && compute.showServiceSecret" class="connection-field credential-field" :data-cloud-credential="compute.showCloudVendor ? 'token' : undefined">
       <div class="connection-field-label">
         <strong>{{ compute.showCloudVendor ? compute.cloudCredentialLabels.token : 'API Key' }}</strong>
@@ -496,7 +514,7 @@ import { getDeepLEndpoint } from '@/src/core/config/deepl'
 import browser from 'webextension-polyfill'
 import { normalizeDiagnostic, diagnoseFailure, type Diagnostic } from '@/src/services/diagnostics'
 import { requestConfigSave, waitForConfigPersistenceQueue } from '@/src/services/config/store'
-import { CONNECTION_TEST_MESSAGE, DEFAULT_OLLAMA_ENDPOINT, getAliyunTranslationEndpoint, getMimoEndpoint, MINIMAX_ENDPOINTS } from '@/src/core/config/constants'
+import { CONNECTION_TEST_MESSAGE, DEFAULT_OLLAMA_ENDPOINT, LOCAL_CLI_BRIDGE_ENDPOINTS, getAliyunTranslationEndpoint, getMimoEndpoint, MINIMAX_ENDPOINTS } from '@/src/core/config/constants'
 import { chromeTranslationPreparationStore } from '@/src/platform/browser/chromeTranslationPreparationRequest'
 import { ElMessage, ElTabs, ElTabPane } from 'element-plus'
 import 'element-plus/es/components/tabs/style/css'

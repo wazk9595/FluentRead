@@ -61,6 +61,8 @@ const serviceWebsites = {
   grok: 'https://console.x.ai/',
   newapi: 'https://docs.newapi.pro/',
   ollama: 'https://ollama.com/',
+  claudeCode: 'https://claude.com/product/claude-code',
+  codexCli: 'https://developers.openai.com/codex/cli',
   mistral: 'https://console.mistral.ai/',
   cohere: 'https://dashboard.cohere.com/',
   togetherai: 'https://api.together.ai/',

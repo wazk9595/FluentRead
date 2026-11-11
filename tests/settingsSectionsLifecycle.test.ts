@@ -1291,7 +1291,7 @@ describe('设置主表单服务目录与模型事件提交',()=>{
 
 describe('设置主表单当前连接字段能力',()=>{
     const ai=['showAI','showProxy','showModel','showCustomBody','showToken'];
-    const fields=['showAI','showProxy','showModel','showCustomBody','showToken','showYoudao','showTencent','showCloudVendor','showServiceSecret','showServiceRegion','showOllamaEndpoint','showCustomOpenAI','showDeepLX','showMiniMaxRegion','showMiMoRegion','showNewAPI','showAzureOpenaiEndpoint','showDeepseekApiType'];
+    const fields=['showAI','showProxy','showModel','showCustomBody','showToken','showYoudao','showTencent','showCloudVendor','showServiceSecret','showServiceRegion','showOllamaEndpoint','showLocalCliEndpoint','showCustomOpenAI','showDeepLX','showMiniMaxRegion','showMiMoRegion','showNewAPI','showAzureOpenaiEndpoint','showDeepseekApiType'];
     it.each([
         {service:'google',visible:[]},
         {service:'openai',visible:ai},
@@ -1299,6 +1299,8 @@ describe('设置主表单当前连接字段能力',()=>{
         {service:'tencent',visible:['showProxy','showTencent','showCloudVendor']},
         {service:'aliyunTranslation',visible:['showToken','showCloudVendor','showServiceSecret','showServiceRegion']},
         {service:'ollama',visible:['showAI','showProxy','showModel','showCustomBody','showOllamaEndpoint']},
+        {service:'claudeCode',visible:[...ai,'showLocalCliEndpoint']},
+        {service:'codexCli',visible:[...ai,'showLocalCliEndpoint']},
         {service:'deeplx',visible:['showProxy','showToken','showDeepLX']},
         {service:'minimax',visible:[...ai,'showMiniMaxRegion']},
         {service:'mimo',visible:[...ai,'showMiMoRegion']},

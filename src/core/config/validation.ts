@@ -2,7 +2,7 @@
  * @file src/core/config/validation.ts
  *
  * 文件职责：表达各翻译服务对 API Key 的领域校验规则，为保存、连接测试和请求前检查提供一致判定。
- * 主要内容：定义 CredentialConfig，结合服务类型及代理等配置计算凭据要求键，判断是否必须提供密钥，并生成面向用户的缺失凭据消息。 可核对的公开符号包括 CredentialConfig、getApiKeyRequirementKey、isApiKeyRequired、getMissingCredentialMessage。
+ * 主要内容：定义 CredentialConfig，结合服务类型及代理等配置计算凭据要求键，判断是否必须提供密钥（本机 CLI 桥接默认免密钥），并生成面向用户的缺失凭据消息。 可核对的公开符号包括 CredentialConfig、getApiKeyRequirementKey、isApiKeyRequired、getMissingCredentialMessage。
  * 模块边界：本文件属于 core 领域层，只定义规则、类型与纯转换；不直接读写浏览器存储、不发起网络请求、不挂载 Vue/WXT 入口，持久化、协议调用和界面编排分别由 services、providers 与 features 承担。
  */
 
@@ -79,6 +79,8 @@ export function isApiKeyRequired(service: string, config: CredentialConfig): boo
     if (!servicesType.isAI(service)) return true;
     const requirement = config.requireApiKey?.[getApiKeyRequirementKey(service, config)];
     if (typeof requirement === 'boolean') return requirement;
+    // 本机 CLI 桥接复用 CLI 自身的登录；只有用户为桥接启用访问令牌并手动打开开关时才要求密钥。
+    if (servicesType.isLocalCliBridge(service)) return false;
     // custom:* 是新 schema，旧版本不可能为它写入无分隔键；禁止读取可能与
     // legacy custom + 冒号模型碰撞的旧键。内置服务与 legacy custom 仍兼容读取。
     if (isCustomOpenAIProviderId(service) && service !== LEGACY_CUSTOM_OPENAI_PROVIDER_ID) return true;

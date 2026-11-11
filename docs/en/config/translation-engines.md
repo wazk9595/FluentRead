@@ -17,6 +17,7 @@ FluentRead sends text to the service you choose. Start with free translation, or
 | Use an official cloud API | Google Cloud, Azure, Alibaba Cloud, Tencent Cloud, Baidu, or Volcengine |
 | Translate complex expressions or use AI explanations | An AI service with a working key and model |
 | Process translation text locally | Local model translation, Ollama, or [Chrome local translation](/en/guide/chrome-translator) |
+| Reuse a signed-in Claude Code or Codex CLI without an API key | [Claude Code (local) or Codex CLI (local)](#local-claude-code-or-codex-cli) |
 | Rotate services or retry with another provider | Combined translation |
 
 FluentRead is free and open source. Providers may charge separately. Chat subscriptions may not include API allowance; check free quotas, regional availability, and overage rules with your provider.
@@ -221,6 +222,20 @@ node scripts/agent-bridge/bridge.mjs --agent=copilot
 Use `--agent=opencode` for OpenCode. Keep the terminal open. Configure the displayed loopback URL and token as a compatible service, using model `default` or an Agent model ID. Update the token if restarting changes it. Press Ctrl+C to stop.
 
 The bridge accepts text-only, nonstreaming requests and disables Agent tools, files, terminal actions, and permission requests. Text still reaches the Agent’s model provider, may consume subscription allowance, and may leave local session records. Other local processes with the token can call it. Keep the token private. Real-account CLI compatibility needs your own verification; a working API can be used directly without the bridge.
+
+### Local Claude Code or Codex CLI
+
+If Claude Code CLI or Codex CLI is installed and signed in on your computer, FluentRead can use its sign-in and subscription allowance without an API key. A browser extension cannot start local programs, so run the bridge shipped with the source first (Node.js 20 or later, no dependencies):
+
+```sh
+node integrations/local-cli/cli.mjs
+```
+
+You can also download the `fluent-read-local-cli-bridge` archive from the release page and run `start.cmd` on Windows or `./start.sh` on macOS and Linux. Keep the terminal open, select **Claude Code (local)** or **Codex CLI (local)**, and check the connection. The bridge listens on `http://127.0.0.1:18765` by default; if you change the port, enter the full `/v1/chat/completions` URL in **Local bridge URL**.
+
+Use a model name the CLI accepts: Claude Code offers `haiku`, `sonnet`, and `opus`, and `default` keeps the CLI default. Each request starts a CLI process, which takes a few seconds for Claude Code and over ten seconds for Codex, so it is slower than calling an API. For full-page translation, set the service concurrency under **Request limits** to 2 or 3 and watch your subscription allowance.
+
+The bridge listens on the loopback address only and accepts cross-origin requests from browser extensions only. Page text is passed as text to translate: Claude Code runs in safe mode with no tools, and Codex runs in a read-only sandbox with command execution and web search disabled. Text still reaches the model provider used by the CLI. Other local programs can call the bridge too; to restrict it, start it with `--token` and enter the same token as the service API key. Text only; image translation is not supported. See `integrations/local-cli/README.md` for all options.
 
 ## Local models
 

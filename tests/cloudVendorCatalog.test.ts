@@ -5,8 +5,11 @@ import {
     cloudCredentialLabels,
     cloudRegionOptions,
     cloudVendorServices,
+    defaultModelIds,
     getCloudCredentialLabels,
     getDefaultCloudRegion,
+    localCliBridgeServices,
+    models,
     options,
     referenceAiPlatformServices,
     resolveCloudRegion,
@@ -17,11 +20,12 @@ import {
     AZURE_TRANSLATOR_ENDPOINT,
     DEFAULT_OLLAMA_ENDPOINT,
     getAliyunTranslationEndpoint,
+    LOCAL_CLI_BRIDGE_ENDPOINTS,
     urls,
     VOLC_TRANSLATION_ENDPOINT,
 } from '@/src/core/config/constants';
 import {Config, normalizeConfig} from '@/src/core/config/model';
-import {getMissingCredentialMessage} from '@/src/core/config/validation';
+import {getApiKeyRequirementKey, getMissingCredentialMessage, isApiKeyRequired} from '@/src/core/config/validation';
 import {extractConfigCredentials, hasCredentialData} from '@/src/core/config/credentials';
 import {dropCredentialsForChangedDestinations} from '@/src/core/config/credentialBinding';
 import {buildCredentialPreviewChanges} from '@/src/features/settings/model/credentialPreview';
@@ -172,6 +176,26 @@ describe('OpenAI 兼容平台目录', () => {
             .toBe('http://192.168.1.8:11434/v1');
         expect(resolveOpenAICompatibleEndpoint(services.cohere, {proxy: {}}).baseURL).toBe('https://api.cohere.ai/compatibility/v1');
         expect(getMissingCredentialMessage(services.ollama, {token: {}})).toBeNull();
+        // 本机 CLI 桥接：默认指向回环地址上的桥接，按路径前缀区分后端；密钥字段可见但默认不要求。
+        expect([...localCliBridgeServices]).toEqual([services.claudeCode, services.codexCli]);
+        expect(resolveOpenAICompatibleEndpoint(services.claudeCode, {proxy: {}}).baseURL).toBe('http://127.0.0.1:18765/claude/v1');
+        expect(resolveOpenAICompatibleEndpoint(services.codexCli, {proxy: {}}).baseURL).toBe('http://127.0.0.1:18765/codex/v1');
+        expect(resolveOpenAICompatibleEndpoint(services.codexCli, {proxy: {[services.codexCli]: 'http://127.0.0.1:18800/codex/v1/chat/completions'}}).baseURL)
+            .toBe('http://127.0.0.1:18800/codex/v1');
+        expect(LOCAL_CLI_BRIDGE_ENDPOINTS).toEqual({[services.claudeCode]: urls[services.claudeCode], [services.codexCli]: urls[services.codexCli]});
+        for (const service of localCliBridgeServices) {
+            expect(servicesType.isLocalCliBridge(service), service).toBe(true);
+            expect(isApiKeyRequired(service, {}), service).toBe(false);
+            expect(getMissingCredentialMessage(service, {token: {}}), service).toBeNull();
+            // 桥接启用访问令牌时，用户可以手动打开“需要 API Key”开关。
+            const model = defaultModelIds[service as keyof typeof defaultModelIds];
+            const required = {token: {}, model: {[service]: model}, requireApiKey: {[getApiKeyRequirementKey(service, {model: {[service]: model}})]: true}};
+            expect(isApiKeyRequired(service, required), service).toBe(true);
+            expect(getMissingCredentialMessage(service, required), service).toContain('API Key');
+            expect(models.get(service)?.[0], service).toBe(model);
+        }
+        expect(servicesType.isLocalCliBridge(services.ollama)).toBe(false);
+        expect(servicesType.isLocalCliBridge(services.claude)).toBe(false);
         expect(getMissingCredentialMessage(services.mistral, {token: {}})).toContain('API Key');
     });
 });

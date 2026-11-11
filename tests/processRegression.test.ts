@@ -28,6 +28,7 @@ const nativeGroups = [
   ], arguments: ['--test-concurrency=1']},
   {name: 'document HTTP evidence', files: ['tests/documentLiveHttpEvidence.test.mjs'], arguments: []},
   {name: 'chatgpt plan bridge', files: ['tests/chatgptPlanBridge.test.mjs'], arguments: []},
+  {name: 'local cli bridge', files: ['tests/localCliBridge.test.mjs'], arguments: []},
 ];
 const childTimeoutMs = 60_000, cleanupTimeoutMs = 5_000;
 type Exit = {code: number | null; signal: NodeJS.Signals | null};

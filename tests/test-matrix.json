@@ -549,6 +549,7 @@
     "functional": [
       "tests/affectedTests.test.ts",
       "tests/aiSdkOpenAICompatible.test.ts",
+      "tests/localCliBridgeProvider.test.ts",
       "tests/areaTranslationRecovery.test.ts",
       "tests/areaTranslationTrigger.test.ts",
       "tests/areaVisionRecognition.test.ts",

@@ -54,6 +54,8 @@ describe('AI SDK 首批服务路由', () => {
             services.openrouter,
             services.grok,
             services.ollama,
+            services.claudeCode,
+            services.codexCli,
             services.mistral,
             services.cohere,
             services.togetherai,
@@ -66,7 +68,7 @@ describe('AI SDK 首批服务路由', () => {
             services.cheaperinference,
             services.cheapaimodel,
         ]);
-        expect(new Set(AI_SDK_SERVICE_IDS).size).toBe(30);
+        expect(new Set(AI_SDK_SERVICE_IDS).size).toBe(32);
         expect(getAiSdkEndpointRoute(services.custom)).toBe('custom');
         expect(getAiSdkEndpointRoute(services.newapi)).toBe('newapi');
         expect(getAiSdkEndpointRoute(services.azureOpenai)).toBe('azure');

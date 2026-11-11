@@ -12,6 +12,8 @@
   "scripts": {
     "chatgpt:bridge": "node integrations/chatgpt-plan/cli.mjs",
     "test:chatgpt-bridge": "node --test tests/chatgptPlanBridge.test.mjs",
+    "local-cli:bridge": "node integrations/local-cli/cli.mjs",
+    "test:local-cli-bridge": "node --test tests/localCliBridge.test.mjs",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "node scripts/testing/run-resource-safe.mjs -- wxt build",

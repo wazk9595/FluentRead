@@ -185,6 +185,8 @@ describe('AI 模型编号列表', () => {
             services.cheaperinference,
             services.cheapaimodel,
             services.ollama,
+            services.claudeCode,
+            services.codexCli,
             services.custom,
         ]);
         expect(aiServices.filter(option => option.catalogKind === 'platform').map(option => option.value)).toEqual([
@@ -206,6 +208,8 @@ describe('AI 模型编号列表', () => {
             services.cheaperinference,
             services.cheapaimodel,
             services.ollama,
+            services.claudeCode,
+            services.codexCli,
             services.custom,
         ]);
         expect(aiServices.filter(option => option.catalogKind === 'provider')).toHaveLength(16);

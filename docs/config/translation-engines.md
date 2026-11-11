@@ -17,6 +17,7 @@ outline: false
 | 使用云厂商的官方接口 | 谷歌云、Azure、阿里云、腾讯云、百度或火山引擎 |
 | 翻译复杂表达，或配合 AI 讲解 | 已配置密钥与模型的 AI 服务 |
 | 在本机处理翻译文字 | 本地模型翻译、Ollama，或 [Chrome 本地翻译](/guide/chrome-translator) |
+| 复用已登录的 Claude Code 或 Codex CLI，不填 API Key | [Claude Code（本机）或 Codex CLI（本机）](#使用本机-claude-code-或-codex-cli) |
 | 在多个服务之间轮换或失败回退 | 组合翻译 |
 
 流畅阅读免费开源，第三方服务可能单独收费。聊天会员不一定包含 API 额度，免费额度、地区限制和超额处理请以服务商账号为准。
@@ -223,6 +224,20 @@ node scripts/agent-bridge/bridge.mjs --agent=copilot
 OpenCode 改用 `--agent=opencode`。保持终端运行，在兼容接口中填写终端显示的回环地址与令牌，模型填 `default` 或 Agent 提供的 ID；重启令牌改变后需更新。按 Ctrl+C 停止。
 
 桥接仅支持文本、非流式请求，禁用 Agent 工具与文件、终端和权限操作。原文仍会交给 Agent 使用的模型服务，可能消耗订阅额度并留下本机会话记录；本机持有令牌的其他进程也可调用。请勿公开令牌。真实 CLI 账号兼容性需要自行验证；已有可用 API 时可直接配置，无需桥接。
+
+### 使用本机 Claude Code 或 Codex CLI
+
+已经在电脑上安装并登录 Claude Code CLI 或 Codex CLI 时，可以让流畅阅读直接使用它们的登录与订阅额度，不需要 API Key。浏览器扩展不能启动本机程序，需要先运行随源码提供的桥接（Node.js 20 或更高版本，零依赖）：
+
+```sh
+node integrations/local-cli/cli.mjs
+```
+
+也可以下载发布页的 `fluent-read-local-cli-bridge` 压缩包，Windows 双击 `start.cmd`，macOS / Linux 运行 `./start.sh`。保持终端运行，在**聚合平台与接口**选择 **Claude Code（本机）**或 **Codex CLI（本机）**后检查连接；桥接默认监听 `http://127.0.0.1:18765`，换端口时在**本机桥接地址**填写完整的 `/v1/chat/completions` 地址。
+
+模型填 CLI 接受的名称：Claude Code 预置 `haiku`、`sonnet`、`opus`，`default` 表示沿用 CLI 的默认模型。每次请求都会启动一个 CLI 进程，Claude Code 单次约数秒、Codex 约十余秒，比直接调用 API 慢；整页翻译建议把该服务的**请求限制**并发设为 2 至 3，并留意订阅额度。
+
+桥接只监听本机回环地址，只接受浏览器扩展的跨源请求；网页文本只作为待翻译文本，Claude Code 以无工具的安全模式运行，Codex 以只读沙箱运行并关闭命令执行与联网搜索。原文仍会发送给对应 CLI 使用的模型服务。本机其他程序同样可以调用桥接，需要限制时用 `--token` 启动，并在该服务的 API Key 中填写同一个令牌。只支持文本，不支持图片翻译。完整选项见 `integrations/local-cli/README.md`。
 
 ## 使用本地模型
 

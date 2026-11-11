@@ -50,6 +50,16 @@ See the [user guide](https://read.thinkstu.com/en/guide/) for instructions and s
 
 Store updates may arrive at different times. The userscript provides core webpage translation features. See the [installation guide](https://read.thinkstu.com/en/guide/getting-started) for browser and feature availability.
 
+## Local Claude Code and Codex CLI (this fork)
+
+This fork adds two translation services, **Claude Code (local)** and **Codex CLI (local)**, that reuse the sign-in and subscription allowance of the CLIs already installed on your computer, with no API key. Start the zero-dependency bridge, keep it running, then select either service in FluentRead settings:
+
+```sh
+node integrations/local-cli/cli.mjs
+```
+
+The bridge listens on `127.0.0.1:18765` only and accepts browser extensions only. See [integrations/local-cli](./integrations/local-cli/README.md) for options, speed, and the security boundary.
+
 ## Sponsorship
 
 The project is currently funded mainly out of pocket, with a few hundred US dollars spent each month on maintenance. We believe FluentRead can make the world a little better.

@@ -2,7 +2,7 @@
  * @file src/core/config/catalog.ts
  *
  * 文件职责：维护 FluentRead 翻译语言、服务与模型的领域目录，让设置、校验和运行时能够引用同一组稳定的服务标识与模型元数据。
- * 主要内容：明确区分简体中文和繁体中文，统一源语言、目标语言和输入框语言选项，并定义 services、servicesType、服务目录展示分类与排序（含“云服务厂商”分组）、模型候选、云厂商地域白名单、MiniMax 与 MiMo 的计费和地域选项；ChatGPT 套餐服务使用本机助手发现账户模型，不预置 API 模型或密钥字段。提供 resolveConfiguredModel、resolveCloudRegion 等解析函数，把“自定义模型”选择归一为可请求的模型编号。 同时维护默认翻译提示词与历史默认提示词清单，供配置归一化升级未被用户改写的旧默认值。 可核对的公开符号包括 services、cloudVendorServices、referenceAiPlatformServices、servicesType、customModelString、cloudRegionOptions、getDefaultCloudRegion、resolveCloudRegion、minimaxBillingPlans、MiniMaxBillingPlan、minimaxRegions、MiniMaxRegion、mimoBillingPlans、defaultOption、LEGACY_DEFAULT_USER_ROLES。
+ * 主要内容：明确区分简体中文和繁体中文，统一源语言、目标语言和输入框语言选项，并定义 services、servicesType、服务目录展示分类与排序（含“云服务厂商”分组）、模型候选、云厂商地域白名单、MiniMax 与 MiMo 的计费和地域选项；ChatGPT 套餐服务使用本机助手发现账户模型，不预置 API 模型或密钥字段；Claude Code 与 Codex CLI 两项本机服务经 integrations/local-cli 桥接复用 CLI 登录，默认免密钥。提供 resolveConfiguredModel、resolveCloudRegion 等解析函数，把“自定义模型”选择归一为可请求的模型编号。 同时维护默认翻译提示词与历史默认提示词清单，供配置归一化升级未被用户改写的旧默认值。 可核对的公开符号包括 services、cloudVendorServices、referenceAiPlatformServices、servicesType、customModelString、cloudRegionOptions、getDefaultCloudRegion、resolveCloudRegion、minimaxBillingPlans、MiniMaxBillingPlan、minimaxRegions、MiniMaxRegion、mimoBillingPlans、defaultOption、LEGACY_DEFAULT_USER_ROLES。
  * 模块边界：本文件属于 core 领域层，只定义规则、类型与纯转换；目录解析只接受表自身登记的键，未知服务、语言或界面语言按公开回退契约处理；不直接读写浏览器存储、不发起网络请求、不挂载 Vue/WXT 入口，持久化、协议调用和界面编排分别由 services、providers 与 features 承担。
  */
 
@@ -64,6 +64,8 @@ export const services = {
     grok: "grok", // X.AI 的 Grok
     newapi: "newapi", // New API 接口
     ollama: "ollama", // 本地 Ollama 运行时
+    claudeCode: "claudeCode", // 经本机桥接调用已登录的 Claude Code CLI
+    codexCli: "codexCli", // 经本机桥接调用已登录的 Codex CLI
     mistral: "mistral", // Mistral AI
     cohere: "cohere", // Cohere
     togetherai: "togetherai", // Together AI
@@ -109,9 +111,19 @@ export const cloudVendorServices = Object.freeze([
     services.volcTranslation,
 ]);
 
-/** 支持的 OpenAI 兼容平台；除本地 Ollama 外都需要平台密钥。 */
+/**
+ * 经本机 CLI 桥接（integrations/local-cli）调用的服务：桥接只监听回环地址并复用 CLI 自身的登录，
+ * 默认免密钥；仅当桥接启用访问令牌时才需要在 API Key 中填写该令牌。
+ */
+export const localCliBridgeServices = Object.freeze([
+    services.claudeCode,
+    services.codexCli,
+]);
+
+/** 支持的 OpenAI 兼容平台；除本地 Ollama 与本机 CLI 桥接外都需要平台密钥。 */
 export const referenceAiPlatformServices = Object.freeze([
     services.ollama,
+    ...localCliBridgeServices,
     services.mistral,
     services.cohere,
     services.togetherai,
@@ -291,6 +303,7 @@ export const servicesType = {
     ]),
     isMachine: (service: string) => servicesType.machine.has(service),
     isCloudVendor: (service: string) => servicesType.cloudVendor.has(service),
+    isLocalCliBridge: (service: string) => (localCliBridgeServices as readonly string[]).includes(service),
     isUseSecret: (service: string) => servicesType.useSecret.has(service),
     isUseRegion: (service: string) => servicesType.useRegion.has(service),
     isAI: (service: string) => servicesType.AI.has(service) || isCustomOpenAIProviderId(service),
@@ -474,6 +487,9 @@ export const defaultModelIds = {
     [services.cheaperinference]: "gpt-5.4-mini",
     [services.cheapaimodel]: "deepseek-v4-1-flash",
     [services.ollama]: "gemma3:4b",
+    // 本机 CLI 的模型别名由 CLI 自身解析；default 表示沿用 CLI 的默认模型。
+    [services.claudeCode]: "haiku",
+    [services.codexCli]: "default",
 } as const;
 
 export const models = new Map<string, Array<string>>([
@@ -527,6 +543,8 @@ export const models = new Map<string, Array<string>>([
     [services.cheaperinference, [defaultModelIds[services.cheaperinference], "deepseek-v4-flash", "glm-5.3", "claude-sonnet-5", customModelString]],
     [services.cheapaimodel, [defaultModelIds[services.cheapaimodel], "glm-5.3-flash", "glm-5.3", customModelString]],
     [services.ollama, [defaultModelIds[services.ollama], "qwen3.8:27b", "qwen3.8-flash-next:125b-a6b-q4_K_M", "qwen3.8-flash-next:125b-mlx", "qwen3:8b", "gemma3:12b", "llama3.2:3b", "mistral:7b", customModelString]],
+    [services.claudeCode, [defaultModelIds[services.claudeCode], "sonnet", "opus", "default", customModelString]],
+    [services.codexCli, [defaultModelIds[services.codexCli], customModelString]],
 ]);
 
 // 每个需要模型选择的 AI 服务都把列表第一项作为开箱即用的默认模型。
@@ -673,6 +691,8 @@ export const options = {
         {value: services.cheaperinference, label: "Cheaper Inference", catalogKind: "platform"},
         {value: services.cheapaimodel, label: "cheapaimodel", catalogKind: "platform"},
         {value: services.ollama, label: "Ollama", description: "连接本机 Ollama，无需密钥，模型与数据都留在本地。", catalogKind: "platform", searchTerms: ["local localhost 本地"]},
+        {value: services.claudeCode, label: "Claude Code（本机）", description: "通过本机桥接调用已登录的 Claude Code CLI，无需 API Key，使用订阅额度。", catalogKind: "platform", searchTerms: ["claude code cli anthropic local localhost 本地 本机 订阅"]},
+        {value: services.codexCli, label: "Codex CLI（本机）", description: "通过本机桥接调用已登录的 Codex CLI，无需 API Key，使用 ChatGPT 账号额度。", catalogKind: "platform", searchTerms: ["codex cli openai chatgpt local localhost 本地 本机 订阅"]},
         {value: services.custom, label: "自定义接口", catalogKind: "platform"},
     ],
     display: [

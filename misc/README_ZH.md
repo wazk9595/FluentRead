@@ -50,6 +50,16 @@
 
 各浏览器商店的版本更新可能存在时间差。油猴脚本提供核心网页翻译能力；完整支持范围见[安装指南](https://read.thinkstu.com/guide/getting-started)。
 
+## 本机 Claude Code 与 Codex CLI（本分支新增）
+
+本分支新增两项翻译服务：**Claude Code（本机）**和 **Codex CLI（本机）**，直接复用电脑上已安装 CLI 的登录与订阅额度，不需要 API Key。先启动零依赖的本机桥接并保持运行，再在流畅阅读设置中选择对应服务：
+
+```sh
+node integrations/local-cli/cli.mjs
+```
+
+桥接只监听 `127.0.0.1:18765`，只接受浏览器扩展访问。选项、速度与安全边界见 [integrations/local-cli](../integrations/local-cli/README.md)。
+
 ## 企业与项目赞助
 
 项目目前主要由个人支持，每月投入数百美元用于项目维护。我们相信，流畅阅读能为世界带来更多美好。
